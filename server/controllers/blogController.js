@@ -1,6 +1,7 @@
 import fs from 'fs';
 import imageKit from '../config/imageKit.js';
 import Blog from '../models/blog.model.js';
+import Comment from '../models/comment.model.js';
 
 export const addBlog = async (req, res) => {
     try {
@@ -19,6 +20,7 @@ export const addBlog = async (req, res) => {
             fileName: imageFile.originalname,
             folder: '/blogs',
         })
+        fs.unlinkSync(imageFile.path);
 
         //optimise image through imageKit url transformation
         const optimisedImageUrl = imageKit.url({
@@ -38,6 +40,7 @@ export const addBlog = async (req, res) => {
             category, 
             author, 
             image,
+            imageFileId: response.fileId,
             isPublished 
         });
 
@@ -83,6 +86,13 @@ export const deleteBlogById = async (req, res) => {
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
+
+        await Comment.deleteMany({ blogId: id });
+
+        if (blog.imageFileId) {
+            await imageKit.deleteFile(blog.imageFileId);
+        }
+
         res.status(200).json({ message: "Blog deleted successfully" });
     } catch (error) {
         console.error("Error deleting blog:", error);
@@ -118,17 +128,33 @@ export const addComment = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const blog = await Blog.findById(blogId);
-        if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
-        }
+        await Comment.create({ 
+            blogId, 
+            name, 
+            content 
+        });
 
-        blog.comments.push({ name, content });
-        await blog.save();
-
-        res.status(201).json({ message: "Comment added successfully", comments: blog.comments });
+        res.status(201).json({ message: "Comment added for review"});
     } catch (error) {
         console.error("Error adding comment:", error);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+export const getBlogComments = async (req, res) => {
+    try {
+        const { blogId } = req.params;
+
+        if (!blogId) {
+            return res.status(400).json({ message: "Blog ID is required" });
+        }
+
+        const comments = await Comment.find({ blogId, isApproved: true }).sort({ createdAt: -1 });
+
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error("Error fetching blog comments:", error);
         res.status(500).json({ message: error.message });
     }
 }
