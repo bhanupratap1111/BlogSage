@@ -1,14 +1,29 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useAppContext} from '../../context/AppContext.jsx';
+import toast from 'react-hot-toast';
 
 function Login() {
-  const navigate = useNavigate();
+  const {axios, setToken} = useAppContext();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const {data} = await axios.post('/api/admin/login', { email, password });
+      if (data.success) {
+        setToken(data.token)
+        localStorage.setItem('token', data.token);
+        axios.defaults.headers.common['Authorization'] = data.token;
+        toast.success('Login successful');
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -22,7 +37,7 @@ function Login() {
               type="email"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="admin@example.com"
               required
@@ -34,7 +49,7 @@ function Login() {
               type="password"
               name="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
               required
@@ -42,7 +57,7 @@ function Login() {
           </div>
           <button
             type="submit"
-            className="w-full py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition"
+            className="w-full py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 cursor-pointer"
           >
             Login
           </button>

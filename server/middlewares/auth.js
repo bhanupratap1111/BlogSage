@@ -4,7 +4,7 @@ const auth = (req, res, next) => {
     const token = req.headers.authorization;
 
     if (!token) {
-        return res.status(401).json({ message: "Unauthorized access" });
+        return res.json({success:false, message: "Unauthorized access" });
     }
 
     try {
@@ -13,7 +13,7 @@ const auth = (req, res, next) => {
         next();
     } catch (error) {
         console.error("Authentication error:", error);
-        return res.status(403).json({ message: "Invalid token" });
+        return res.json({success:false, message: "Invalid token" });
     }
 }
 

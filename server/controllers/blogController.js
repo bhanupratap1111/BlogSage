@@ -11,7 +11,7 @@ export const addBlog = async (req, res) => {
 
         // Validate input
         if (!title || !description || !author || !category || !imageFile) {
-            return res.status(400).json({ message: "All fields are required" });
+            return res.json({success: false, message: "All fields are required" });
         }
 
         const fileBuffer = fs.readFileSync(imageFile.path);
@@ -45,10 +45,10 @@ export const addBlog = async (req, res) => {
         });
 
         console.log("New blog post created:", newBlog);
-        res.status(201).json({ message: "Blog post created successfully", });
+        res.json({success:true, message: "Blog added successfully", });
     } catch (error) {
         console.error("Error creating blog post:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -56,10 +56,10 @@ export const addBlog = async (req, res) => {
 export const getAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.find({ isPublished: true }).sort({ createdAt: -1 });     
-        res.status(200).json(blogs);
+        res.json({success:true, blogs});
     } catch (error) {
         console.error("Error fetching blogs:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -69,12 +69,12 @@ export const getBlogById = async (req, res) => {
         const { blogId } = req.params;
         const blog = await Blog.findById(blogId);
         if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.json({success:false, message: "Blog not found" });
         }   
-        res.status(200).json(blog);
+        res.json({success:true, blog});
     } catch (error) {
         console.error("Error fetching blog by ID:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }       
 }
 
@@ -84,7 +84,7 @@ export const deleteBlogById = async (req, res) => {
         const { id } = req.body;
         const blog = await Blog.findByIdAndDelete(id);
         if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.json({success:false, message: "Blog not found" });
         }
 
         await Comment.deleteMany({ blogId: id });
@@ -93,10 +93,10 @@ export const deleteBlogById = async (req, res) => {
             await imageKit.deleteFile(blog.imageFileId);
         }
 
-        res.status(200).json({ message: "Blog deleted successfully" });
+        res.json({success:true, message: "Blog deleted successfully" });
     } catch (error) {
         console.error("Error deleting blog:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -106,15 +106,15 @@ export const togglePublishStatus = async (req, res) => {
         const { id } = req.body;
         const blog = await Blog.findById(id);
         if (!blog) {
-            return res.status(404).json({ message: "Blog not found" });
+            return res.json({success:false, message: "Blog not found" });
         }
         blog.isPublished = !blog.isPublished;
         await blog.save();
-        res.status(200).json({ message: `Blog ${blog.isPublished ? 'published' : 'unpublished'} successfully` });           
+        res.json({success:true, message: "Blog status updated" });           
     }
     catch (error) {
         console.error("Error toggling publish status:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -125,7 +125,7 @@ export const addComment = async (req, res) => {
 
         // Validate input
         if (!blogId || !name || !content) {
-            return res.status(400).json({ message: "All fields are required" });
+            return res.json({success:false, message: "All fields are required" });
         }
 
         await Comment.create({ 
@@ -134,27 +134,26 @@ export const addComment = async (req, res) => {
             content 
         });
 
-        res.status(201).json({ message: "Comment added for review"});
+        res.json({success:true, message: "Comment added for review"});
     } catch (error) {
         console.error("Error adding comment:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
 
 export const getBlogComments = async (req, res) => {
     try {
-        const { blogId } = req.params;
+        const { blogId } = req.body;
 
         if (!blogId) {
-            return res.status(400).json({ message: "Blog ID is required" });
+            return res.json({success:false, message: "Blog ID is required" });
         }
 
         const comments = await Comment.find({ blogId, isApproved: true }).sort({ createdAt: -1 });
-
-        res.status(200).json(comments);
+        res.json({success:true, comments});
     } catch (error) {
         console.error("Error fetching blog comments:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }

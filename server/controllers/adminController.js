@@ -8,12 +8,12 @@ export const adminLogin = async(req, res) => {
 
         // Validate input
         if (!email || !password) {
-            return res.status(400).json({ message: "Username and password are required" });
+            return res.json({success:false, message: "Username and password are required" });
         }
 
         // Check credentials (this is a placeholder, replace with actual authentication logic)
         if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
-            return res.status(401).json({ message: "Invalid credentials" });
+            return res.json({success:false, message: "Invalid credentials" });
         } 
 
         const token = jwt.sign(
@@ -21,10 +21,10 @@ export const adminLogin = async(req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
-        res.status(200).json({ message: "Login successful", token });
+        res.json({success:true, token});
     } catch (error) {
         console.error("Error during admin login:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -32,10 +32,10 @@ export const adminLogin = async(req, res) => {
 export const getAllBlogsAdmin = async (req, res) => {
     try {
         const blogs = await Blog.find({}).sort({ createdAt: -1 });
-        res.status(200).json(blogs);
+        res.json({success:true, blogs});
     } catch (error) {
         console.error("Error fetching blogs:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -43,10 +43,10 @@ export const getAllBlogsAdmin = async (req, res) => {
 export const getAllComments = async (req, res) => {
     try {
         const comments = await Comment.find({}).populate("blogId").sort({ createdAt: -1 });
-        res.status(200).json(comments);
+        res.json({success:true, comments});
     } catch (error) {
         console.error("Error fetching comments:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -58,15 +58,16 @@ export const getDashBoard = async (req, res) => {
         const recentBlogs = await Blog.find({}).sort({ createdAt: -1 }).limit(5);
         const drafts = await Blog.find({ isPublished: false }).sort({ createdAt: -1 }).limit(5);
 
-        res.status(200).json({
+        const dashboardData = {
             blogs,
             comments,
             recentBlogs,
             drafts
-        });
+        };
+        res.json({success : true, dashboardData})
     } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -76,12 +77,12 @@ export const deleteCommentById = async (req, res) => {
         const { id } = req.body;
         const comment = await Comment.findByIdAndDelete(id);
         if (!comment) {
-            return res.status(404).json({ message: "Comment not found" });
+            return res.json({success:false, message: "Comment not found" });
         }
-        res.status(200).json({ message: "Comment deleted successfully" });
+        res.json({success:true, message: "Comment deleted successfully" });
     } catch (error) {
         console.error("Error deleting comment:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
@@ -91,12 +92,12 @@ export const approveCommentById = async (req, res) => {
         const { id } = req.body;
         const comment = await Comment.findByIdAndUpdate(id, { isApproved: true }, { new: true });
         if (!comment) {
-            return res.status(404).json({ message: "Comment not found" });
+            return res.json({success:false, message: "Comment not found" });
         }
-        res.status(200).json({ message: "Comment approved successfully" });
+        res.json({success:true, message: "Comment approved successfully" });
     } catch (error) {
         console.error("Error approving comment:", error);
-        res.status(500).json({ message: error.message });
+        res.json({success:false, message: error.message });
     }
 }
 
