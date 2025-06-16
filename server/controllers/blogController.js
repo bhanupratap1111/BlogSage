@@ -2,6 +2,7 @@ import fs from 'fs';
 import imageKit from '../config/imageKit.js';
 import Blog from '../models/blog.model.js';
 import Comment from '../models/comment.model.js';
+import main from '../config/gemini.js';
 
 export const addBlog = async (req, res) => {
     try {
@@ -108,8 +109,13 @@ export const togglePublishStatus = async (req, res) => {
         if (!blog) {
             return res.json({success:false, message: "Blog not found" });
         }
-        blog.isPublished = !blog.isPublished;
-        await blog.save();
+
+        const updatedBlog = await Blog.findByIdAndUpdate(
+            id,
+            { isPublished: !blog.isPublished },
+            { new: true } // return updated document
+        );
+        
         res.json({success:true, message: "Blog status updated" });           
     }
     catch (error) {
@@ -122,18 +128,11 @@ export const togglePublishStatus = async (req, res) => {
 export const addComment = async (req, res) => {
     try {
         const { blogId, name, content } = req.body;
-
-        // Validate input
-        if (!blogId || !name || !content) {
-            return res.json({success:false, message: "All fields are required" });
-        }
-
         await Comment.create({ 
             blogId, 
             name, 
             content 
         });
-
         res.json({success:true, message: "Comment added for review"});
     } catch (error) {
         console.error("Error adding comment:", error);
@@ -145,7 +144,6 @@ export const addComment = async (req, res) => {
 export const getBlogComments = async (req, res) => {
     try {
         const { blogId } = req.body;
-
         if (!blogId) {
             return res.json({success:false, message: "Blog ID is required" });
         }
@@ -154,6 +152,22 @@ export const getBlogComments = async (req, res) => {
         res.json({success:true, comments});
     } catch (error) {
         console.error("Error fetching blog comments:", error);
+        res.json({success:false, message: error.message });
+    }
+}
+
+
+export const generateContent = async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        if (!prompt) {
+            return res.json({success:false, message: "Prompt is required" });
+        }
+
+        const content = await main(prompt + 'Generate a blog post based on this prompt. The content should be engaging, informative, and suitable for a general audience.');
+        res.json({success:true, content});
+    } catch (error) {
+        console.error("Error generating content:", error);
         res.json({success:false, message: error.message });
     }
 }

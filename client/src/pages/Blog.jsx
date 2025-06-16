@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { comments_data, blog_data, assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
@@ -6,26 +6,61 @@ import Moment from 'moment';
 import { useState, useEffect } from 'react';
 import Footer from '../components/Footer';
 import Loader from '../components/Loader';
+import { useAppContext } from '../context/AppContext.jsx';
+import toast from 'react-hot-toast';
 
 function Blog() {
     const {id} = useParams();
-    const [data, setData] = useState(null);
-    const [comments, setComments] = useState([null]);
 
+    const {axios} = useAppContext();
+
+    const [data, setData] = useState(null);
+    const [comments, setComments] = useState([]);
     const [name, setName] = useState('');
     const [content, setContent] = useState('');
 
     const fetchBlogData = async () => {
-        const data = blog_data.find(item => item._id === id)
-        setData(data);
+        try {
+            const {data} = await axios.get(`/api/blog/${id}`);
+            data.success ? setData(data.blog) : toast.error(data.message); 
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     const fetchComments = async () => {
-        setComments(comments_data)
+        try {
+            const {data} = await axios.post(`/api/blog/comments`, {blogId: id});
+            if(data.success) {
+                setComments(data.comments);
+            }else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);   
+        }
     }
 
     const addComment = async (e) => {
-        e?.preventDefault();
+        e.preventDefault();
+
+        try {
+            const {data} = await axios.post(`/api/blog/add-comment`, {
+                blogId: id,
+                name,
+                content
+            });
+            if(data.success) {
+                toast.success(data.message);
+                setName('');
+                setContent('');
+                await fetchComments(); // Refresh comments after adding a new one
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);    
+        }
     }   
 
     useEffect(() => {

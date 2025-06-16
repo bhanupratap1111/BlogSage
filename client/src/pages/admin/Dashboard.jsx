@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import { assets, dashboard_data } from '../../assets/assets';
 import BlogTableItem from '../../components/admin/BlogTableItem';
+import { useAppContext } from '../../context/AppContext.jsx';
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -10,8 +11,19 @@ function Dashboard() {
     recentBlogs: []
   });
 
+  const {axios} = useAppContext();
+
   const fetchDashboardData = async () => {
-    setDashboardData(dashboard_data);
+    try {
+      const {data} = await axios.get('/api/admin/dashboard');
+      if (data.success) {
+        setDashboardData(data.dashboardData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 
   useEffect(() => {
