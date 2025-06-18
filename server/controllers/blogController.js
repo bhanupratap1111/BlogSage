@@ -3,6 +3,8 @@ import imageKit from '../config/imageKit.js';
 import Blog from '../models/blog.model.js';
 import Comment from '../models/comment.model.js';
 import main from '../config/gemini.js';
+import { Resend } from 'resend';
+import Newsletter from '../models/newsletter.model.js';
 
 export const addBlog = async (req, res) => {
     try {
@@ -46,6 +48,19 @@ export const addBlog = async (req, res) => {
         });
 
         console.log("New blog post created:", newBlog);
+
+        const emails = ['blogsage.app@gmail.com'];
+
+        if (emails.length > 0) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: emails,
+            subject: `New Blog Posted: ${newBlog.title}`,
+            html: `<p>A new blog titled "<strong>${newBlog.title}</strong>" has been posted. <a href="http://localhost:3000">Read it now!</a></p>`,
+        });
+        }
 
         res.json({success:true, message: "Blog added successfully", });
     } catch (error) {
