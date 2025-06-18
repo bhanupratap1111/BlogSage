@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import { assets, dashboard_data } from '../../assets/assets';
 import BlogTableItem from '../../components/admin/BlogTableItem';
 import { useAppContext } from '../../context/AppContext.jsx';
+import toast from 'react-hot-toast';
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState({
@@ -11,7 +12,7 @@ function Dashboard() {
     recentBlogs: []
   });
 
-  const {axios} = useAppContext();
+  const {axios, fetchBlogs} = useAppContext();
 
   const fetchDashboardData = async () => {
     try {
@@ -88,8 +89,10 @@ function Dashboard() {
               {dashboardData.recentBlogs.map((blog, index) => (
                 <BlogTableItem key ={blog._id}
                   blog={blog} 
-                  fetchBlogs={fetchDashboardData} 
-                  index={index + 1} />
+                  index={index + 1}
+                  fetchAdminBlogs={fetchDashboardData}
+                  fetchBlogs={fetchBlogs}
+                />
               ))}
             </tbody>
           </table>

@@ -54,7 +54,6 @@ function Blog() {
                 toast.success(data.message);
                 setName('');
                 setContent('');
-                await fetchComments(); // Refresh comments after adding a new one
             } else {
                 toast.error(data.message);
             }
@@ -66,7 +65,6 @@ function Blog() {
     useEffect(() => {
         fetchBlogData();
         fetchComments();
-        addComment();
     }, []);
 
     return data ? (

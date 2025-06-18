@@ -44,6 +44,7 @@ export const AppProvider = ({children}) => {
         setBlogs,
         input,
         setInput,
+        fetchBlogs
     }
 
     return (

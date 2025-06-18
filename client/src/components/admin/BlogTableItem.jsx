@@ -3,8 +3,7 @@ import {assets} from '../../assets/assets'
 import { useAppContext } from '../../context/AppContext.jsx'
 import toast from 'react-hot-toast'
 
-function BlogTableItem({blog, fetchBlogs, index}) {
-
+function BlogTableItem({blog, index, fetchAdminBlogs, fetchBlogs}) {
     const {title, createdAt} = blog
     const BlogDate  = new Date(createdAt)
 
@@ -17,6 +16,7 @@ function BlogTableItem({blog, fetchBlogs, index}) {
             const {data} = await axios.post('/api/blog/delete', {id: blog._id});
             if(data.success) {
                 toast.success(data.message);
+                await fetchAdminBlogs();
                 await fetchBlogs();
             } else {
                 toast.error(data.message);
@@ -31,6 +31,7 @@ function BlogTableItem({blog, fetchBlogs, index}) {
             const {data} = await axios.post('/api/blog/toggle-publish', {id: blog._id});
             if(data.success) {
                 toast.success(data.message);
+                await fetchAdminBlogs();
                 await fetchBlogs();
             } else {
                 toast.error(data.message);

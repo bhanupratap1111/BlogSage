@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {parse} from 'marked'
 
 function AddBlog() {
-  const {axios} = useAppContext()
+  const {axios, fetchBlogs} = useAppContext()
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -67,6 +67,7 @@ function AddBlog() {
       const {data} = await axios.post('/api/blog/add', formData);
       if (data.success) {
         toast.success(data.message);
+        await fetchBlogs();
         setImage(false);
         setTitle('');
         setSubTitle('');

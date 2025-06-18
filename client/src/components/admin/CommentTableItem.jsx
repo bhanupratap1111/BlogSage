@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 
 function CommentTableItem({comment, fetchComments}){
 
-    const {blog, createdAt, _id} = comment
+    const {blogId, createdAt, _id} = comment
     const BlogDate = new Date(createdAt)
 
     const {axios} = useAppContext();
@@ -43,7 +43,7 @@ function CommentTableItem({comment, fetchComments}){
   return (
     <tr className='order-y border-gray-300'>
         <td className='px-6 py-4'>
-            <b className='font-medium text-gray-600'>Blog</b>: {blog.title}
+            <b className='font-medium text-gray-600'>Blog</b>: {blogId?.title}
             <br/>
             <br/>
             <b className='font-medium text-gray-600'>Name</b>: {comment.name}

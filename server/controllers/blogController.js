@@ -46,6 +46,7 @@ export const addBlog = async (req, res) => {
         });
 
         console.log("New blog post created:", newBlog);
+
         res.json({success:true, message: "Blog added successfully", });
     } catch (error) {
         console.error("Error creating blog post:", error);
