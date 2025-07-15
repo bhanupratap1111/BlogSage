@@ -1,7 +1,5 @@
 # BlogSage - AI-Powered Blogging Platform
 
-![BlogSage Logo Placeholder](https://via.placeholder.com/150)
-
 BlogSage is a full-stack blogging platform that allows users to view, comment on blogs, and subscribe to a newsletter for new post notifications. It also features a robust admin panel for managing blogs, comments, and leveraging AI for content generation.
 
 ---
